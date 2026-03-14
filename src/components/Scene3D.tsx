@@ -189,8 +189,8 @@ export default function Scene3D({ isDarkMode }: { isDarkMode: boolean }) {
           <ParallaxRig>
             <HackerMask isDarkMode={isDarkMode} />
             
-            {isDarkMode && <Stars radius={100} depth={50} count={4000} factor={3} saturation={0} fade speed={2} color="#10b981" />}
-            {!isDarkMode && <Stars radius={100} depth={50} count={1000} factor={2} saturation={0} fade speed={1} color="#94a3b8" />}
+            {isDarkMode && <Stars radius={100} depth={50} count={4000} factor={3} saturation={0} fade speed={2} />}
+            {!isDarkMode && <Stars radius={100} depth={50} count={1000} factor={2} saturation={0} fade speed={1} />}
           </ParallaxRig>
         </Suspense>
       </Canvas>
