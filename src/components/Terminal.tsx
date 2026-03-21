@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Terminal as TerminalIcon } from 'lucide-react';
+import { playUISound } from '../utils/sounds';
 
 interface Command {
   cmd: string;
@@ -31,6 +32,8 @@ export default function Terminal() {
     
     if (!cmd) return;
 
+    playUISound('click');
+
     let output: React.ReactNode = '';
 
     switch (cmd) {
@@ -40,6 +43,8 @@ export default function Terminal() {
             <p><span className="text-emerald-400">whoami</span> - Display user info</p>
             <p><span className="text-emerald-400">skills</span> - List technical arsenal</p>
             <p><span className="text-emerald-400">contact</span> - Show secure comms</p>
+            <p><span className="text-emerald-400">scan-network</span> - Run vulnerability scan</p>
+            <p><span className="text-emerald-400">download-cv</span> - Get encrypted resume</p>
             <p><span className="text-emerald-400">clear</span> - Clear terminal output</p>
           </div>
         );
@@ -61,12 +66,35 @@ export default function Terminal() {
       case 'contact':
         output = <p className="text-slate-300">Email: szater600@gmail.com | Status: Listening on Port 443...</p>;
         break;
+      case 'scan-network':
+        output = (
+          <div className="text-emerald-400 animate-pulse font-mono text-xs">
+            <p>[*] Initiating Nmap scan on local subnet...</p>
+            <p>[+] Host 192.168.1.1 is up (0.0020s latency).</p>
+            <p>[+] Host 192.168.1.15 is up (0.0051s latency).</p>
+            <p className="text-red-400">[!] Port 22/tcp open (ssh) - Brute force possible</p>
+            <p>[!] Port 80/tcp open (http)</p>
+            <p className="text-red-400">[!] Port 445/tcp open (microsoft-ds) - VULNERABLE TO MS17-010</p>
+            <p>[*] Scan complete. 2 hosts up. 2 vulnerabilities found.</p>
+          </div>
+        );
+        break;
+      case 'download-cv':
+        output = (
+          <div className="text-emerald-400">
+            <p>[*] Generating encrypted CV...</p>
+            <p>[+] Download initiated.</p>
+            <a href="#" className="underline text-blue-400 hover:text-blue-300">x-black_cv_encrypted.pdf</a>
+          </div>
+        );
+        break;
       case 'clear':
         setHistory([]);
         setInput('');
         return;
       case 'sudo hack':
       case 'matrix':
+        playUISound('success');
         output = (
           <div className="text-red-500 animate-pulse font-bold">
             <p>[!] WARNING: UNAUTHORIZED ACCESS DETECTED</p>
@@ -79,6 +107,7 @@ export default function Terminal() {
         setTimeout(() => document.body.classList.remove('matrix-mode'), 5000);
         break;
       default:
+        playUISound('error');
         output = <p className="text-red-400">Command not found: {cmd}. Type 'help' for available commands.</p>;
     }
 
@@ -116,7 +145,6 @@ export default function Terminal() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="flex-1 bg-transparent border-none outline-none text-white caret-emerald-500"
-            autoFocus
             autoComplete="off"
             spellCheck="false"
           />

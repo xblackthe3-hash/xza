@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import { playUISound } from '../utils/sounds';
 
 interface SpotlightCardProps {
   children: React.ReactNode;
@@ -15,20 +16,42 @@ export default function SpotlightCard({
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!divRef.current) return;
     const rect = divRef.current.getBoundingClientRect();
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPosition({ x, y });
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / 20;
+    const rotateY = (centerX - x) / 20;
+    setRotate({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseEnter = () => {
+    setOpacity(1);
+    playUISound('hover');
+  };
+
+  const handleMouseLeave = () => {
+    setOpacity(0);
+    setRotate({ x: 0, y: 0 });
   };
 
   return (
     <motion.div
       ref={divRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setOpacity(1)}
-      onMouseLeave={() => setOpacity(0)}
-      className={`relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 shadow-xl shadow-slate-200/40 dark:shadow-none transition-colors duration-300 group ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      animate={{ rotateX: rotate.x, rotateY: rotate.y }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className={`relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 transition-colors duration-300 group ${className}`}
+      style={{ transformStyle: 'preserve-3d' }}
     >
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 z-0"

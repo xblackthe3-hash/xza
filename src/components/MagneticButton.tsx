@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import { playUISound } from '../utils/sounds';
 
 interface MagneticButtonProps {
   children: React.ReactNode;
@@ -26,16 +27,26 @@ export default function MagneticButton({ children, className = '', href, onClick
     setPosition({ x: 0, y: 0 });
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    playUISound('click');
+    if (onClick) onClick();
+  };
+
+  const handleMouseEnter = () => {
+    playUISound('hover');
+  };
+
   const Component = href ? motion.a : motion.button;
 
   return (
     <Component
       ref={ref as any}
       href={href}
-      onClick={onClick}
+      onClick={handleClick as any}
       target={target}
       rel={rel}
       onMouseMove={handleMouse}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={reset}
       animate={{ x: position.x, y: position.y }}
       transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
