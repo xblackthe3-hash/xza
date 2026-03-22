@@ -7,6 +7,7 @@ import JobDetails from './pages/JobDetails';
 import PostJob from './pages/PostJob';
 import Contact from './pages/Contact';
 import AdminDashboard from './pages/AdminDashboard';
+import SavedJobs from './pages/SavedJobs';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:id" element={<JobDetails />} />
+          <Route path="saved" element={<SavedJobs />} />
           <Route path="post-job" element={<PostJob />} />
           <Route path="contact" element={<Contact />} />
           <Route path="admin" element={<AdminDashboard />} />

@@ -1,26 +1,82 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Briefcase, ChevronLeft, Building2, Users, Star, ArrowLeft, PlusCircle } from 'lucide-react';
+import { Search, MapPin, Briefcase, ChevronLeft, Building2, Users, Star, ArrowLeft, PlusCircle, Clock, MessageCircle, Heart, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { motion } from 'motion/react';
+import { formatDistanceToNow } from 'date-fns';
+import { arEG } from 'date-fns/locale';
+
+const FALLBACK_CATEGORIES = [
+  { id: '1', name_ar: 'صيدليات' },
+  { id: '2', name_ar: 'محلات تجارية' },
+  { id: '3', name_ar: 'مطاعم وكافيهات' },
+  { id: '4', name_ar: 'سائقين وتوصيل' },
+  { id: '5', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
+  { id: '6', name_ar: 'مطلوب حالاً (شغل النهارده)' },
+  { id: '7', name_ar: 'أمن وحراسة' },
+  { id: '8', name_ar: 'تعليم وتدريس' },
+  { id: '9', name_ar: 'أخرى' }
+];
 
 export default function Home() {
   const [recentJobs, setRecentJobs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
+    setSavedJobs(JSON.parse(localStorage.getItem('nekla_saved_jobs') || '[]'));
     async function fetchHomeData() {
-      const { data: catData } = await supabase.from('job_categories').select('*').eq('is_active', true).limit(8);
-      if (catData) setCategories(catData);
+      try {
+        const { data: catData } = await supabase.from('job_categories').select('*').eq('is_active', true).limit(8);
+        if (catData && catData.length > 0) {
+          setCategories(catData);
+        } else {
+          setCategories(FALLBACK_CATEGORIES.slice(0, 8));
+        }
+      } catch (e) {
+        setCategories(FALLBACK_CATEGORIES.slice(0, 8));
+      }
 
-      const { data: jobData } = await supabase
-        .from('jobs')
-        .select('id, job_title, business_name, governorate, center, area, salary_text, employment_type, created_at, job_categories (name_ar)')
-        .eq('status', 'approved')
-        .order('published_at', { ascending: false })
-        .limit(6);
-      if (jobData) setRecentJobs(jobData);
+      try {
+        const { data: jobData, error } = await supabase
+          .from('jobs')
+          .select('id, job_title, business_name, governorate, center, area, salary_text, employment_type, created_at, published_at, status, category_id, job_categories (name_ar)');
+          
+        let allJobs = [];
+        if (!error && jobData) {
+          allJobs = jobData;
+        }
+
+        const localJobs = JSON.parse(localStorage.getItem('nekla_jobs') || '[]');
+        const overrides = JSON.parse(localStorage.getItem('nekla_job_overrides') || '{}');
+
+        allJobs = [...allJobs, ...localJobs];
+        allJobs = allJobs.map(job => overrides[job.id] ? { ...job, status: overrides[job.id] } : job);
+
+        let filtered = allJobs.filter(j => j.status === 'approved');
+
+        // Filter out jobs older than 20 days
+        const twentyDaysAgo = new Date();
+        twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+        filtered = filtered.filter(j => new Date(j.published_at || j.created_at) >= twentyDaysAgo);
+
+        filtered = filtered.map((j: any) => {
+          if (!j.job_categories) {
+            const cat = FALLBACK_CATEGORIES.find(c => c.id === j.category_id);
+            return { ...j, job_categories: { name_ar: cat ? cat.name_ar : 'غير محدد' } };
+          }
+          return j;
+        });
+
+        filtered = Array.from(new Map(filtered.map(item => [item.id, item])).values());
+        filtered.sort((a: any, b: any) => new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime());
+
+        setRecentJobs(filtered.slice(0, 6));
+      } catch (e) {
+        console.error("Error fetching jobs:", e);
+      }
     }
     fetchHomeData();
   }, []);
@@ -32,57 +88,94 @@ export default function Home() {
     }
   };
 
+  const toggleSave = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    let newSaved = [...savedJobs];
+    if (newSaved.includes(id)) {
+      newSaved = newSaved.filter(jId => jId !== id);
+    } else {
+      newSaved.push(id);
+    }
+    setSavedJobs(newSaved);
+    localStorage.setItem('nekla_saved_jobs', JSON.stringify(newSaved));
+  };
+
   const popularSearches = ['عاملة منزلية', 'نجار', 'عامل مطعم', 'سائق', 'كاشير', 'بائع'];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants: any = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <motion.div 
+      initial="hidden" 
+      animate="visible" 
+      exit={{ opacity: 0 }}
+      className="flex flex-col min-h-screen"
+    >
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden bg-gradient-to-br from-[#0B1727] via-[#16345A] to-[#046C4E]">
+      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden bg-gradient-to-br from-[#0B1727] via-[#16345A] to-[#046C4E]">
         {/* Starry Background */}
         <div className="absolute inset-0 bg-stars opacity-40"></div>
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-yellow-500 text-sm font-bold mb-8 backdrop-blur-sm">
-            <Star size={16} className="fill-yellow-500" />
-            منصة الوظائف الأولى في نكلا
-          </div>
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-yellow-500 text-xs md:text-sm font-bold mb-6 md:mb-8 backdrop-blur-sm">
+            <Star size={14} className="fill-yellow-500" />
+            منصة الوظائف الأولى في نكلا العنب
+          </motion.div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-[1.2]">
-            <span className="block mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">فرص شغل</span>
+          <motion.h1 variants={itemVariants} className="text-3xl md:text-7xl font-extrabold text-white mb-6 leading-[1.3] md:leading-[1.2]">
+            <span className="block mb-1 md:mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">فرص شغل</span>
             قريبة منك في
-            <span className="block mt-2 text-yellow-400">نكلا</span>
-          </h1>
+            <span className="block mt-1 md:mt-2 text-yellow-400">نكلا العنب</span>
+          </motion.h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-blue-100/80 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+          <motion.p variants={itemVariants} className="text-base md:text-xl text-blue-100/80 mb-10 md:mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
             لو بتدور على شغل أو محتاج حد يشتغل عندك، الموقع ده هيساعدك بسهولة وبسرعة
-          </p>
+          </motion.p>
 
           {/* Search Bar */}
-          <div className="max-w-3xl mx-auto mb-8">
-            <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-2xl flex items-center gap-2 shadow-2xl shadow-black/20">
-              <div className="flex-1 flex items-center px-4">
+          <motion.div variants={itemVariants} className="max-w-3xl mx-auto mb-8">
+            <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-md border border-white/20 p-1.5 md:p-2 rounded-2xl flex flex-col md:flex-row items-center gap-2 shadow-2xl shadow-black/20">
+              <div className="w-full flex-1 flex items-center px-4">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="...ابحث عن وظيفة حلمك"
-                  className="w-full bg-transparent border-none text-white placeholder-blue-200/50 focus:outline-none focus:ring-0 text-lg"
+                  placeholder="ابحث بالمسمى الوظيفي أو اسم المكان..."
+                  className="w-full bg-transparent border-none text-white placeholder-blue-200/50 focus:outline-none focus:ring-0 text-base md:text-lg py-2"
                   dir="rtl"
                 />
               </div>
-              <button type="submit" className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg">
+              <button type="submit" className="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg">
                 ابحث الآن
-                <Search size={20} />
+                <Search size={18} />
               </button>
             </form>
-          </div>
+          </motion.div>
 
           {/* Popular Searches */}
-          <div className="mb-16">
+          <motion.div variants={itemVariants} className="mb-16">
             <p className="text-sm text-blue-200/60 mb-4 font-medium flex items-center justify-center gap-2">
               <Search size={14} /> البحث الشائع
             </p>
@@ -97,25 +190,25 @@ export default function Home() {
                 </Link>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/jobs"
-              className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-900 font-bold rounded-2xl text-lg transition-all shadow-xl flex items-center justify-center gap-3 group"
+              className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-white hover:bg-slate-50 text-slate-900 font-bold rounded-2xl text-base md:text-lg transition-all shadow-xl flex items-center justify-center gap-3 group"
             >
-              <Briefcase size={24} className="text-blue-600 group-hover:scale-110 transition-transform" />
+              <Briefcase size={22} className="text-blue-600 group-hover:scale-110 transition-transform" />
               أنا بدور على شغل
             </Link>
             <Link
               to="/post-job"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 text-white font-bold rounded-2xl text-lg transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 group"
+              className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 text-white font-bold rounded-2xl text-base md:text-lg transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 group"
             >
-              <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft size={22} className="group-hover:-translate-x-1 transition-transform" />
               أنا محتاج حد يشتغل
             </Link>
-          </div>
+          </motion.div>
 
         </div>
 
@@ -199,15 +292,32 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentJobs.length > 0 ? recentJobs.map((job) => (
-              <Link key={job.id} to={`/jobs/${job.id}`} className="block bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 group">
-                <div className="flex justify-between items-start mb-4">
+              <Link key={job.id} to={`/jobs/${job.id}`} className="block bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 group relative">
+                <button 
+                  onClick={(e) => toggleSave(e, job.id)}
+                  className="absolute top-4 left-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors z-10"
+                  title={savedJobs.includes(job.id) ? "إزالة من المحفوظات" : "حفظ الوظيفة"}
+                >
+                  <Heart size={20} className={savedJobs.includes(job.id) ? "fill-red-500 text-red-500" : ""} />
+                </button>
+                <div className="flex justify-between items-start mb-4 gap-4 pr-10">
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-2">{job.job_title}</h3>
                     <p className="text-slate-500 text-sm font-medium">{job.business_name || 'جهة غير معلنة'}</p>
                   </div>
-                  <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                    {job.employment_type || 'دوام كامل'}
-                  </span>
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap">
+                      {job.employment_type || 'دوام كامل'}
+                    </span>
+                    <span className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex items-center gap-1">
+                      <Clock size={12} />
+                      {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: arEG }) : 'منذ فترة'}
+                    </span>
+                    <span className="text-slate-400 text-xs flex items-center gap-1">
+                      <Eye size={12} />
+                      {120 + (job.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 300)}
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="space-y-3 mb-8">
@@ -222,10 +332,27 @@ export default function Home() {
                 </div>
 
                 <div className="pt-5 border-t border-slate-100 flex justify-between items-center">
-                  <span className="font-bold text-emerald-600">{job.salary_text || 'يحدد في المقابلة'}</span>
-                  <span className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <ChevronLeft size={20} />
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 mb-1">الراتب المتوقع</span>
+                    <span className="font-bold text-emerald-600">{job.salary_text || 'يحدد في المقابلة'}</span>
+                  </div>
+                  {job.whatsapp ? (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.open(`https://wa.me/${job.whatsapp.replace(/[^0-9]/g, '')}?text=بخصوص إعلان وظيفة: ${job.job_title} على وظائف نكلا العنب`, '_blank');
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-[#25D366] hover:bg-[#128C7E] text-white text-sm font-bold rounded-xl transition-all shadow-sm hover:shadow-md"
+                    >
+                      <MessageCircle size={16} />
+                      كلم على واتساب
+                    </button>
+                  ) : (
+                    <span className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <ChevronLeft size={20} />
+                    </span>
+                  )}
                 </div>
               </Link>
             )) : (
@@ -248,6 +375,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }

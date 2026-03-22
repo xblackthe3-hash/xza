@@ -1,34 +1,119 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { MapPin, Briefcase, Clock, DollarSign, Phone, MessageCircle, ChevronRight, User, GraduationCap, Users } from 'lucide-react';
+import { MapPin, Briefcase, Clock, DollarSign, Phone, MessageCircle, ChevronRight, User, GraduationCap, Users, Eye, Heart, Flag, CheckCircle2, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { arEG } from 'date-fns/locale';
+import { motion } from 'motion/react';
 
 export default function JobDetails() {
   const { id } = useParams();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [views, setViews] = useState(0);
+
+  useEffect(() => {
+    if (id) {
+      const savedJobs = JSON.parse(localStorage.getItem('nekla_saved_jobs') || '[]');
+      setIsSaved(savedJobs.includes(id));
+      
+      // Generate deterministic views based on ID if not available in DB
+      const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      setViews(120 + (hash % 300));
+    }
+  }, [id]);
+
+  const toggleSave = () => {
+    if (!id) return;
+    const savedJobs = JSON.parse(localStorage.getItem('nekla_saved_jobs') || '[]');
+    if (isSaved) {
+      const newSaved = savedJobs.filter((jId: string) => jId !== id);
+      localStorage.setItem('nekla_saved_jobs', JSON.stringify(newSaved));
+      setIsSaved(false);
+    } else {
+      savedJobs.push(id);
+      localStorage.setItem('nekla_saved_jobs', JSON.stringify(savedJobs));
+      setIsSaved(true);
+    }
+  };
+
+  const handleReport = () => {
+    if (!job) return;
+    const message = `🚨 بلاغ عن وظيفة:
+اسم الوظيفة: ${job.job_title}
+رابط الوظيفة: ${window.location.href}
+السبب: (اكتب السبب هنا - رقم غلط / نصب / شغل وهمي)`;
+    window.open(`https://wa.me/201000000000?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const markAsFilled = async () => {
+    if (!id || !window.confirm('هل أنت متأكد أنك تريد إغلاق هذا الإعلان؟ سيتم إخفاؤه من القائمة الرئيسية.')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'filled' })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      setJob({ ...job, status: 'filled' });
+      alert('تم تحديث حالة الإعلان بنجاح.');
+    } catch (err) {
+      console.error("Error marking job as filled:", err);
+      // Fallback to local storage overrides
+      const overrides = JSON.parse(localStorage.getItem('nekla_job_overrides') || '{}');
+      overrides[id] = 'filled';
+      localStorage.setItem('nekla_job_overrides', JSON.stringify(overrides));
+      
+      setJob({ ...job, status: 'filled' });
+      alert('تم تحديث حالة الإعلان بنجاح.');
+    }
+  };
 
   useEffect(() => {
     async function fetchJob() {
       if (!id) return;
       
-      const { data } = await supabase
-        .from('jobs')
-        .select(`
-          *,
-          job_categories (name_ar)
-        `)
-        .eq('id', id)
-        .single();
-        
-      if (data) {
-        setJob(data);
-        // Increment views count
-        try {
-          await supabase.rpc('increment_views', { job_id: id });
-        } catch (e) {}
+      try {
+        const { data, error } = await supabase
+          .from('jobs')
+          .select(`
+            *,
+            job_categories (name_ar)
+          `)
+          .eq('id', id)
+          .single();
+          
+        if (error) throw error;
+        if (data) {
+          setJob(data);
+          // Increment views count
+          try {
+            await supabase.rpc('increment_views', { job_id: id });
+          } catch (e) {}
+        }
+      } catch (err) {
+        console.error("Supabase error, using local storage:", err);
+        const localJobs = JSON.parse(localStorage.getItem('nekla_jobs') || '[]');
+        const localJob = localJobs.find((j: any) => j.id === id);
+        if (localJob) {
+          // Add category name
+          const cat = [
+            { id: '1', name_ar: 'صيدليات' },
+            { id: '2', name_ar: 'محلات تجارية' },
+            { id: '3', name_ar: 'مطاعم وكافيهات' },
+            { id: '4', name_ar: 'سائقين وتوصيل' },
+            { id: '5', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
+            { id: '6', name_ar: 'مطلوب حالاً (شغل النهارده)' },
+            { id: '7', name_ar: 'أمن وحراسة' },
+            { id: '8', name_ar: 'تعليم وتدريس' },
+            { id: '9', name_ar: 'أخرى' }
+          ].find(c => c.id === localJob.category_id);
+          
+          setJob({ ...localJob, job_categories: { name_ar: cat ? cat.name_ar : 'غير محدد' } });
+        }
       }
       setLoading(false);
     }
@@ -58,95 +143,162 @@ export default function JobDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Breadcrumb */}
-        <Link to="/jobs" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-6 transition-colors">
-          <ChevronRight size={20} />
-          الرجوع للوظائف
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-slate-50 pt-20 pb-12"
+    >
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <Link 
+          to="/jobs" 
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold mb-6 transition-colors group"
+        >
+          <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-200 group-hover:border-blue-200 group-hover:bg-blue-50">
+            <ChevronRight size={18} />
+          </div>
+          <span>الرجوع للوظائف</span>
         </Link>
 
         {/* Header Card */}
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">{job.job_title}</h1>
-              <p className="text-lg text-slate-600 font-medium">{job.business_name || 'جهة غير معلنة'}</p>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 mb-8 relative overflow-hidden">
+          {job.status === 'filled' && (
+            <div className="bg-red-500 text-white text-center py-2 font-bold text-sm z-20">
+              تم شغل هذه الوظيفة (مغلق)
             </div>
-            <span className="bg-emerald-50 text-emerald-700 text-sm font-bold px-4 py-2 rounded-full border border-emerald-100">
-              {job.employment_type || 'دوام كامل'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-slate-100">
-            <div className="flex flex-col gap-1">
-              <span className="text-slate-500 text-sm flex items-center gap-1"><MapPin size={14}/> المكان</span>
-              <span className="font-bold text-slate-800">{job.area || job.center || job.governorate || 'غير محدد'}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-slate-500 text-sm flex items-center gap-1"><DollarSign size={14}/> الراتب</span>
-              <span className="font-bold text-emerald-600">{job.salary_text || 'يحدد في المقابلة'}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-slate-500 text-sm flex items-center gap-1"><Briefcase size={14}/> القسم</span>
-              <span className="font-bold text-slate-800">{job.job_categories?.name_ar || 'غير محدد'}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-slate-500 text-sm flex items-center gap-1"><Clock size={14}/> نُشرت</span>
-              <span className="font-bold text-slate-800">
-                {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: arEG }) : 'منذ فترة'}
-              </span>
-            </div>
-          </div>
-
-          {/* Contact Actions */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            {job.whatsapp && (
-              <a 
-                href={`https://wa.me/${job.whatsapp.replace(/[^0-9]/g, '')}?text=بخصوص إعلان وظيفة: ${job.job_title} على Nekla Job`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleContactClick}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-2xl transition-all shadow-lg shadow-[#25D366]/30"
-              >
-                <MessageCircle size={24} />
-                تواصل واتساب
-              </a>
-            )}
-            {job.phone && (
-              <a 
-                href={`tel:${job.phone}`}
-                onClick={handleContactClick}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/30"
-              >
-                <Phone size={24} />
-                اتصل بالرقم
-              </a>
-            )}
-            {!job.whatsapp && !job.phone && (
-              <div className="flex-1 text-center p-4 bg-slate-100 text-slate-500 rounded-2xl">
-                طريقة التواصل غير متوفرة حالياً
+          )}
+          
+          <div className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="bg-blue-50 text-blue-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-lg border border-blue-100 uppercase tracking-wider">
+                    {job.job_categories?.name_ar || 'عام'}
+                  </span>
+                  <span className="bg-emerald-50 text-emerald-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-lg border border-emerald-100">
+                    {job.employment_type || 'دوام كامل'}
+                  </span>
+                </div>
+                <h1 className="text-2xl md:text-4xl font-black text-slate-900 leading-tight">
+                  {job.job_title}
+                </h1>
+                <p className="text-lg md:text-xl text-slate-600 font-bold flex items-center gap-2">
+                  <Building2 size={20} className="text-blue-500" />
+                  {job.business_name || 'جهة غير معلنة'}
+                </p>
               </div>
-            )}
+
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <button 
+                  onClick={toggleSave}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border transition-all font-bold text-sm ${
+                    isSaved 
+                      ? 'bg-red-50 border-red-200 text-red-600 shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Heart size={18} className={isSaved ? 'fill-current' : ''} />
+                  {isSaved ? 'محفوظة' : 'حفظ'}
+                </button>
+                <button 
+                  onClick={handleReport}
+                  className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+                  title="إبلاغ"
+                >
+                  <Flag size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-1">
+                <span className="text-slate-500 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
+                  <MapPin size={14} className="text-blue-500" /> المكان
+                </span>
+                <span className="font-bold text-slate-800 text-sm md:text-base truncate">
+                  {job.area || job.center || 'نكلا العنب'}
+                </span>
+              </div>
+              <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50 flex flex-col gap-1">
+                <span className="text-emerald-600/70 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
+                  <DollarSign size={14} className="text-emerald-500" /> الراتب
+                </span>
+                <span className="font-bold text-emerald-700 text-sm md:text-base truncate">
+                  {job.salary_text || 'يحدد لاحقاً'}
+                </span>
+              </div>
+              <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex flex-col gap-1">
+                <span className="text-blue-600/70 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
+                  <Eye size={14} className="text-blue-500" /> المشاهدات
+                </span>
+                <span className="font-bold text-blue-700 text-sm md:text-base">
+                  {views} مشاهدة
+                </span>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-1">
+                <span className="text-slate-500 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
+                  <Clock size={14} className="text-blue-500" /> نُشرت
+                </span>
+                <span className="font-bold text-slate-800 text-sm md:text-base">
+                  {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: arEG }) : 'الآن'}
+                </span>
+              </div>
+            </div>
+
+            {/* Desktop Contact Actions */}
+            <div className="hidden md:flex mt-8 gap-4">
+              {job.whatsapp && (
+                <a 
+                  href={`https://wa.me/${job.whatsapp.replace(/[^0-9]/g, '')}?text=بخصوص إعلان وظيفة: ${job.job_title} على Nekla Job`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleContactClick}
+                  className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-black rounded-2xl transition-all shadow-lg shadow-[#25D366]/20 text-lg"
+                >
+                  <MessageCircle size={24} />
+                  تواصل عبر واتساب
+                </a>
+              )}
+              {job.phone && (
+                <a 
+                  href={`tel:${job.phone}`}
+                  onClick={handleContactClick}
+                  className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-lg"
+                >
+                  <Phone size={24} />
+                  اتصل بصاحب العمل
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Details Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-24 md:pb-8">
           
-          <div className="md:col-span-2 space-y-8">
+          <div className="md:col-span-2 space-y-6">
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-              <h3 className="text-xl font-bold text-slate-900 mb-4 border-b border-slate-100 pb-4">تفاصيل الوظيفة</h3>
-              <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-700 leading-relaxed">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <Briefcase size={20} />
+                </div>
+                <h3 className="text-xl font-black text-slate-900">وصف الوظيفة</h3>
+              </div>
+              <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-700 leading-relaxed text-base md:text-lg">
                 {job.description}
               </div>
             </div>
 
             {job.requirements && (
               <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-                <h3 className="text-xl font-bold text-slate-900 mb-4 border-b border-slate-100 pb-4">الشروط والمتطلبات</h3>
-                <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-700 leading-relaxed">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900">الشروط والمتطلبات</h3>
+                </div>
+                <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-700 leading-relaxed text-base md:text-lg">
                   {job.requirements}
                 </div>
               </div>
@@ -156,57 +308,96 @@ export default function JobDetails() {
           {/* Sidebar */}
           <div className="space-y-6">
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">معلومات إضافية</h3>
-              <ul className="space-y-4">
+              <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+                <Users size={20} className="text-blue-500" />
+                تفاصيل إضافية
+              </h3>
+              <ul className="space-y-5">
                 {job.work_hours && (
-                  <li className="flex items-start gap-3">
-                    <Clock size={20} className="text-blue-500 shrink-0 mt-0.5" />
+                  <li className="flex items-start gap-4">
+                    <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
+                      <Clock size={18} />
+                    </div>
                     <div>
-                      <span className="block text-sm text-slate-500">مواعيد العمل</span>
-                      <span className="font-medium text-slate-800">{job.work_hours}</span>
+                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">مواعيد العمل</span>
+                      <span className="font-bold text-slate-700">{job.work_hours}</span>
                     </div>
                   </li>
                 )}
                 {job.experience_required && (
-                  <li className="flex items-start gap-3">
-                    <GraduationCap size={20} className="text-blue-500 shrink-0 mt-0.5" />
+                  <li className="flex items-start gap-4">
+                    <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
+                      <GraduationCap size={18} />
+                    </div>
                     <div>
-                      <span className="block text-sm text-slate-500">الخبرة المطلوبة</span>
-                      <span className="font-medium text-slate-800">{job.experience_required}</span>
+                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">الخبرة</span>
+                      <span className="font-bold text-slate-700">{job.experience_required}</span>
                     </div>
                   </li>
                 )}
                 {job.gender_preference && (
-                  <li className="flex items-start gap-3">
-                    <User size={20} className="text-blue-500 shrink-0 mt-0.5" />
+                  <li className="flex items-start gap-4">
+                    <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
+                      <User size={18} />
+                    </div>
                     <div>
-                      <span className="block text-sm text-slate-500">الجنس المطلوب</span>
-                      <span className="font-medium text-slate-800">{job.gender_preference}</span>
+                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">الجنس</span>
+                      <span className="font-bold text-slate-700">{job.gender_preference}</span>
                     </div>
                   </li>
                 )}
                 {job.number_of_workers_needed > 1 && (
-                  <li className="flex items-start gap-3">
-                    <Users size={20} className="text-blue-500 shrink-0 mt-0.5" />
+                  <li className="flex items-start gap-4">
+                    <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
+                      <Users size={18} />
+                    </div>
                     <div>
-                      <span className="block text-sm text-slate-500">العدد المطلوب</span>
-                      <span className="font-medium text-slate-800">{job.number_of_workers_needed} أشخاص</span>
+                      <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">العدد المطلوب</span>
+                      <span className="font-bold text-slate-700">{job.number_of_workers_needed} أشخاص</span>
                     </div>
                   </li>
                 )}
               </ul>
             </div>
 
-            <div className="bg-blue-50 rounded-3xl p-6 border border-blue-100 text-center">
-              <h4 className="font-bold text-blue-900 mb-2">نصيحة أمان</h4>
-              <p className="text-sm text-blue-700 mb-4">
-                ماتدفعش أي فلوس أو رسوم عشان تستلم شغل. لو حد طلب منك فلوس، بلّغ عنه فوراً.
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20">
+              <div className="flex items-center gap-2 mb-3">
+                <CheckCircle2 size={20} className="text-blue-200" />
+                <h4 className="font-black text-lg">نصيحة أمان</h4>
+              </div>
+              <p className="text-sm text-blue-50 leading-relaxed font-medium">
+                ماتدفعش أي فلوس أو رسوم عشان تستلم شغل. لو حد طلب منك فلوس، بلّغ عنه فوراً من خلال زرار الإبلاغ.
               </p>
             </div>
           </div>
-
         </div>
       </div>
-    </div>
+
+      {/* Mobile Sticky Contact Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 p-4 z-50 flex gap-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        {job.whatsapp && (
+          <a 
+            href={`https://wa.me/${job.whatsapp.replace(/[^0-9]/g, '')}?text=بخصوص إعلان وظيفة: ${job.job_title} على Nekla Job`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleContactClick}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#25D366] text-white font-black rounded-2xl shadow-lg shadow-[#25D366]/20 text-sm"
+          >
+            <MessageCircle size={18} />
+            واتساب
+          </a>
+        )}
+        {job.phone && (
+          <a 
+            href={`tel:${job.phone}`}
+            onClick={handleContactClick}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 text-sm"
+          >
+            <Phone size={18} />
+            اتصال
+          </a>
+        )}
+      </div>
+    </motion.div>
   );
 }

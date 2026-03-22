@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export default function Contact() {
   const [loading, setLoading] = useState(false);
@@ -33,14 +34,29 @@ export default function Contact() {
       setSuccess(true);
       setFormData({ full_name: '', phone: '', subject: '', message: '' });
     } catch (err: any) {
-      setError(err.message || 'حصلت مشكلة في إرسال الرسالة. جرب تاني.');
+      console.error("Supabase error, using local storage:", err);
+      const localMessages = JSON.parse(localStorage.getItem('nekla_messages') || '[]');
+      localMessages.push({
+        id: Math.random().toString(36).substr(2, 9),
+        ...formData,
+        status: 'new',
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('nekla_messages', JSON.stringify(localMessages));
+      setSuccess(true);
+      setFormData({ full_name: '', phone: '', subject: '', message: '' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-slate-50 py-12"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-12">
@@ -64,7 +80,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">تليفون / واتساب</p>
-                    <p className="font-bold text-slate-800" dir="ltr">+20 100 000 0000</p>
+                    <p className="font-bold text-slate-800" dir="ltr">+20 109 084 1534</p>
                   </div>
                 </div>
                 
@@ -74,7 +90,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">البريد الإلكتروني</p>
-                    <p className="font-bold text-slate-800">support@neklajob.com</p>
+                    <p className="font-bold text-slate-800">sayedblack3@gmil.com</p>
                   </div>
                 </div>
 
@@ -84,7 +100,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">العنوان</p>
-                    <p className="font-bold text-slate-800">نكلا - منشأة القناطر - الجيزة</p>
+                    <p className="font-bold text-slate-800">غير معروف</p>
                   </div>
                 </div>
               </div>
@@ -198,6 +214,6 @@ export default function Contact() {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

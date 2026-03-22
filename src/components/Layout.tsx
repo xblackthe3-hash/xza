@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Briefcase, Menu, X, Home, PlusCircle, Search, Phone } from 'lucide-react';
+import { Briefcase, Menu, X, Home, PlusCircle, Search, Phone, Heart } from 'lucide-react';
 import Chatbot from './Chatbot';
+import Notifications from './Notifications';
+import { AnimatePresence } from 'motion/react';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -10,6 +12,7 @@ export default function Layout() {
   const navLinks = [
     { name: 'الرئيسية', path: '/', icon: <Home size={18} /> },
     { name: 'شوف الوظايف', path: '/jobs', icon: <Search size={18} /> },
+    { name: 'المحفوظات', path: '/saved', icon: <Heart size={18} /> },
     { name: 'تواصل معانا', path: '/contact', icon: <Phone size={18} /> },
   ];
 
@@ -18,15 +21,15 @@ export default function Layout() {
       {/* Navbar */}
       <header className="bg-[#0B1727] border-b border-white/5 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20 items-center">
+          <div className="flex justify-between h-16 md:h-20 items-center">
             <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-3">
-                <div className="bg-blue-600/20 text-blue-400 p-2 rounded-xl border border-blue-500/30">
-                  <Briefcase size={28} />
+              <Link to="/" className="flex items-center gap-2 md:gap-3">
+                <div className="bg-blue-600/20 text-blue-400 p-1.5 md:p-2 rounded-lg md:rounded-xl border border-blue-500/30">
+                  <Briefcase className="w-5 h-5 md:w-7 md:h-7" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white leading-none tracking-tight">نكلا جوب</h1>
-                  <p className="text-[11px] text-blue-300/70 font-medium mt-1">فرص شغل قريبة منك</p>
+                  <h1 className="text-lg md:text-2xl font-bold text-white leading-none tracking-tight">وظائف نكلا العنب</h1>
+                  <p className="text-[9px] md:text-[11px] text-blue-300/70 font-medium mt-1">فرص شغل قريبة منك</p>
                 </div>
               </Link>
             </div>
@@ -47,6 +50,7 @@ export default function Layout() {
                   {link.name}
                 </Link>
               ))}
+              <Notifications />
               <Link
                 to="/post-job"
                 className="ml-4 flex items-center gap-2 bg-[#FBBF24] hover:bg-[#F59E0B] text-slate-900 px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-yellow-500/20"
@@ -63,19 +67,20 @@ export default function Layout() {
             </nav>
 
             {/* Mobile menu button */}
-            <div className="flex items-center md:hidden gap-4">
+            <div className="flex items-center md:hidden gap-2">
+              <Notifications />
               <Link
                 to="/post-job"
-                className="flex items-center gap-1 bg-[#FBBF24] text-slate-900 px-3 py-2 rounded-lg font-bold text-sm"
+                className="flex items-center gap-1 bg-[#FBBF24] hover:bg-[#F59E0B] text-slate-900 px-3 py-2 rounded-lg font-bold text-xs shadow-md shadow-yellow-500/10 transition-all active:scale-95"
               >
-                <PlusCircle size={16} />
+                <PlusCircle size={14} />
                 ضيف وظيفة
               </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-slate-300 hover:text-white p-2"
+                className="text-slate-300 hover:text-white p-1"
               >
-                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
           </div>
@@ -114,7 +119,9 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="flex-grow">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <Outlet key={location.pathname} />
+        </AnimatePresence>
       </main>
 
       {/* Footer */}
@@ -122,16 +129,16 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
             <Briefcase size={28} className="text-blue-500" />
-            <span className="text-2xl font-bold text-white">نكلا جوب</span>
+            <span className="text-2xl font-bold text-white">وظائف نكلا العنب</span>
           </div>
-          <p className="mb-6 text-sm max-w-md mx-auto leading-relaxed">منصة الوظائف الأولى في نكلا والمناطق المجاورة. بنوصل أصحاب الشغل بالناس اللي بتدور على فرصة حقيقية.</p>
+          <p className="mb-6 text-sm max-w-md mx-auto leading-relaxed">منصة الوظائف الأولى في نكلا العنب والمناطق المجاورة. بنوصل أصحاب الشغل بالناس اللي بتدور على فرصة حقيقية.</p>
           <div className="flex justify-center gap-6 text-sm font-medium mb-8">
             <Link to="/contact" className="hover:text-white transition-colors">تواصل معانا</Link>
             <Link to="/jobs" className="hover:text-white transition-colors">الوظائف</Link>
             <Link to="/post-job" className="hover:text-white transition-colors">نزل إعلان</Link>
           </div>
           <p className="text-xs text-slate-600">
-            © {new Date().getFullYear()} Nekla Job. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} وظائف نكلا العنب. جميع الحقوق محفوظة.
           </p>
         </div>
       </footer>

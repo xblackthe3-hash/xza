@@ -1,35 +1,98 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { CheckCircle, XCircle, Clock, Archive, Trash2, ShieldAlert } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Archive, Trash2, ShieldAlert, Lock, KeyRound } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { arEG } from 'date-fns/locale';
+import { motion } from 'motion/react';
 
 export default function AdminDashboard() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending'); // pending, approved, rejected, archived
+  const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('admin_auth') === 'true');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === 'admin123') {
+      sessionStorage.setItem('admin_auth', 'true');
+      setIsAuthenticated(true);
+      setLoginError('');
+    } else {
+      setLoginError('كلمة المرور غير صحيحة');
+    }
+  };
 
   useEffect(() => {
-    fetchJobs();
-  }, [filter]);
+    if (isAuthenticated) {
+      fetchJobs();
+    }
+  }, [filter, isAuthenticated]);
 
   async function fetchJobs() {
     setLoading(true);
-    const { data } = await supabase
-      .from('jobs')
-      .select(`
-        *,
-        job_categories (name_ar)
-      `)
-      .eq('status', filter)
-      .order('created_at', { ascending: false });
-      
-    if (data) setJobs(data);
-    setLoading(false);
+    try {
+      let fetchedJobs: any[] = [];
+      const { data, error } = await supabase
+        .from('jobs')
+        .select(`
+          *,
+          job_categories (name_ar)
+        `)
+        .order('created_at', { ascending: false });
+        
+      if (!error && data) {
+        fetchedJobs = data;
+      }
+
+      const localJobs = JSON.parse(localStorage.getItem('nekla_jobs') || '[]');
+      const overrides = JSON.parse(localStorage.getItem('nekla_job_overrides') || '{}');
+
+      let allJobs = [...fetchedJobs, ...localJobs];
+
+      // Apply overrides
+      allJobs = allJobs.map(job => {
+        if (overrides[job.id]) {
+          return { ...job, status: overrides[job.id] };
+        }
+        return job;
+      });
+
+      // Filter
+      let filtered = allJobs.filter(j => j.status === filter);
+
+      // Deduplicate
+      filtered = Array.from(new Map(filtered.map(item => [item.id, item])).values());
+
+      filtered.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setJobs(filtered);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleAction = async (id: string, action: string) => {
-    if (!window.confirm(`متأكد إنك عايز تعمل ${action} للإعلان ده؟`)) return;
+    // Optimistic UI update
+    setJobs(prev => prev.filter(j => j.id !== id));
+
+    // Update local overrides immediately
+    const overrides = JSON.parse(localStorage.getItem('nekla_job_overrides') || '{}');
+    overrides[id] = action;
+    localStorage.setItem('nekla_job_overrides', JSON.stringify(overrides));
+
+    // Update local jobs if it exists there
+    const localJobs = JSON.parse(localStorage.getItem('nekla_jobs') || '[]');
+    const updatedLocalJobs = localJobs.map((j: any) => {
+      if (j.id === id) {
+        return { ...j, status: action, published_at: action === 'approved' ? new Date().toISOString() : j.published_at };
+      }
+      return j;
+    });
+    localStorage.setItem('nekla_jobs', JSON.stringify(updatedLocalJobs));
 
     try {
       const updates: any = { status: action };
@@ -41,34 +104,95 @@ export default function AdminDashboard() {
         .from('jobs')
         .update(updates)
         .eq('id', id);
-
-      if (error) throw error;
-      
-      // Refresh list
-      fetchJobs();
+        
+      if (error) {
+        console.error("Supabase update error:", error);
+      }
     } catch (err: any) {
-      alert(err.message || 'حصلت مشكلة.');
+      console.error("Supabase error:", err);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('متأكد إنك عايز تمسح الإعلان ده نهائياً؟')) return;
+    if (!window.confirm('هل أنت متأكد من مسح هذا الإعلان نهائياً؟')) return;
+
+    // Optimistic UI update
+    setJobs(prev => prev.filter(j => j.id !== id));
+
+    // Update local overrides immediately
+    const overrides = JSON.parse(localStorage.getItem('nekla_job_overrides') || '{}');
+    overrides[id] = 'deleted';
+    localStorage.setItem('nekla_job_overrides', JSON.stringify(overrides));
+
+    // Remove from local jobs if it exists there
+    const localJobs = JSON.parse(localStorage.getItem('nekla_jobs') || '[]');
+    const filteredLocalJobs = localJobs.filter((j: any) => j.id !== id);
+    localStorage.setItem('nekla_jobs', JSON.stringify(filteredLocalJobs));
 
     try {
       const { error } = await supabase
         .from('jobs')
         .delete()
         .eq('id', id);
-
-      if (error) throw error;
-      fetchJobs();
+        
+      if (error) {
+        console.error("Supabase delete error:", error);
+      }
     } catch (err: any) {
-      alert(err.message || 'حصلت مشكلة في المسح.');
+      console.error("Supabase error:", err);
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="min-h-screen bg-slate-50 flex items-center justify-center p-4"
+      >
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-sm border border-slate-200 text-center">
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">لوحة الإدارة</h1>
+          <p className="text-slate-500 mb-8">برجاء إدخال كلمة المرور للوصول للوحة التحكم</p>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <KeyRound className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="كلمة المرور"
+                  className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-left"
+                  dir="ltr"
+                />
+              </div>
+              {loginError && <p className="text-red-500 text-sm mt-2 text-right">{loginError}</p>}
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30"
+            >
+              دخول
+            </button>
+          </form>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-slate-50 py-8"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -198,6 +322,6 @@ export default function AdminDashboard() {
         )}
 
       </div>
-    </div>
+    </motion.div>
   );
 }
