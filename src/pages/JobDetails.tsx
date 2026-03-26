@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { MapPin, Briefcase, Clock, DollarSign, Phone, MessageCircle, ChevronRight, User, GraduationCap, Users, Eye, Heart, Flag, CheckCircle2, Building2 } from 'lucide-react';
+import { MapPin, Briefcase, Clock, DollarSign, Phone, MessageCircle, ChevronRight, User, GraduationCap, Users, Eye, Heart, Flag, CheckCircle2, Building2, Share2, Facebook, Copy } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { arEG } from 'date-fns/locale';
 import { motion } from 'motion/react';
@@ -44,7 +44,7 @@ export default function JobDetails() {
 اسم الوظيفة: ${job.job_title}
 رابط الوظيفة: ${window.location.href}
 السبب: (اكتب السبب هنا - رقم غلط / نصب / شغل وهمي)`;
-    window.open(`https://wa.me/201000000000?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/201090841534?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const markAsFilled = async () => {
@@ -101,15 +101,16 @@ export default function JobDetails() {
         if (localJob) {
           // Add category name
           const cat = [
-            { id: '1', name_ar: 'صيدليات' },
-            { id: '2', name_ar: 'محلات تجارية' },
-            { id: '3', name_ar: 'مطاعم وكافيهات' },
-            { id: '4', name_ar: 'سائقين وتوصيل' },
-            { id: '5', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
-            { id: '6', name_ar: 'مطلوب حالاً (شغل النهارده)' },
-            { id: '7', name_ar: 'أمن وحراسة' },
-            { id: '8', name_ar: 'تعليم وتدريس' },
-            { id: '9', name_ar: 'أخرى' }
+            { id: '1', name_ar: 'عمالة زراعية ومزارع' },
+            { id: '2', name_ar: 'صنايعية وحرفيين' },
+            { id: '3', name_ar: 'سائقين (نقل، جرار، توك توك)' },
+            { id: '4', name_ar: 'محلات تجارية وسوبر ماركت' },
+            { id: '5', name_ar: 'صيدليات وعيادات' },
+            { id: '6', name_ar: 'مطاعم وكافيهات' },
+            { id: '7', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
+            { id: '8', name_ar: 'تعليم وتدريس (حضانات، سناتر)' },
+            { id: '9', name_ar: 'أمن وحراسة' },
+            { id: '10', name_ar: 'أخرى' }
           ].find(c => c.id === localJob.category_id);
           
           setJob({ ...localJob, job_categories: { name_ar: cat ? cat.name_ar : 'غير محدد' } });
@@ -129,15 +130,29 @@ export default function JobDetails() {
     }
   };
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert('تم نسخ الرابط بنجاح!');
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = `شوف الوظيفة دي على نكلا جوب: ${job.job_title}\n${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleShareFacebook = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+  };
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00D084]"></div></div>;
   }
 
   if (!job) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 text-center">
         <h2 className="text-2xl font-bold text-slate-800 mb-4">الوظيفة دي مش موجودة أو اتمسحت</h2>
-        <Link to="/jobs" className="text-blue-600 hover:underline font-medium">الرجوع لقائمة الوظائف</Link>
+        <Link to="/jobs" className="text-[#00D084] hover:underline font-medium">الرجوع لقائمة الوظائف</Link>
       </div>
     );
   }
@@ -153,9 +168,9 @@ export default function JobDetails() {
         {/* Back Button */}
         <Link 
           to="/jobs" 
-          className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold mb-6 transition-colors group"
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-[#00D084] font-bold mb-6 transition-colors group"
         >
-          <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-200 group-hover:border-blue-200 group-hover:bg-blue-50">
+          <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-200 group-hover:border-[#00D084]/30 group-hover:bg-emerald-50">
             <ChevronRight size={18} />
           </div>
           <span>الرجوع للوظائف</span>
@@ -173,18 +188,18 @@ export default function JobDetails() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="bg-blue-50 text-blue-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-lg border border-blue-100 uppercase tracking-wider">
+                  <span className="bg-slate-100 text-slate-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-200 uppercase tracking-wider">
                     {job.job_categories?.name_ar || 'عام'}
                   </span>
                   <span className="bg-emerald-50 text-emerald-700 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-lg border border-emerald-100">
                     {job.employment_type || 'دوام كامل'}
                   </span>
                 </div>
-                <h1 className="text-2xl md:text-4xl font-black text-slate-900 leading-tight">
+                <h1 className="text-2xl md:text-4xl font-black text-[#0B1B3D] leading-tight">
                   {job.job_title}
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 font-bold flex items-center gap-2">
-                  <Building2 size={20} className="text-blue-500" />
+                  <Building2 size={20} className="text-[#00D084]" />
                   {job.business_name || 'جهة غير معلنة'}
                 </p>
               </div>
@@ -214,7 +229,7 @@ export default function JobDetails() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-1">
                 <span className="text-slate-500 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
-                  <MapPin size={14} className="text-blue-500" /> المكان
+                  <MapPin size={14} className="text-[#00D084]" /> المكان
                 </span>
                 <span className="font-bold text-slate-800 text-sm md:text-base truncate">
                   {job.area || job.center || 'نكلا العنب'}
@@ -228,17 +243,17 @@ export default function JobDetails() {
                   {job.salary_text || 'يحدد لاحقاً'}
                 </span>
               </div>
-              <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 flex flex-col gap-1">
-                <span className="text-blue-600/70 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
-                  <Eye size={14} className="text-blue-500" /> المشاهدات
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50 flex flex-col gap-1">
+                <span className="text-slate-600/70 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
+                  <Eye size={14} className="text-[#00D084]" /> المشاهدات
                 </span>
-                <span className="font-bold text-blue-700 text-sm md:text-base">
+                <span className="font-bold text-slate-700 text-sm md:text-base">
                   {views} مشاهدة
                 </span>
               </div>
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-1">
                 <span className="text-slate-500 text-[10px] md:text-xs font-bold flex items-center gap-1 uppercase tracking-wide">
-                  <Clock size={14} className="text-blue-500" /> نُشرت
+                  <Clock size={14} className="text-[#00D084]" /> نُشرت
                 </span>
                 <span className="font-bold text-slate-800 text-sm md:text-base">
                   {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: arEG }) : 'الآن'}
@@ -264,7 +279,7 @@ export default function JobDetails() {
                 <a 
                   href={`tel:${job.phone}`}
                   onClick={handleContactClick}
-                  className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-500/20 text-lg"
+                  className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-[#0B1B3D] hover:bg-[#152b57] text-white font-black rounded-2xl transition-all shadow-lg shadow-[#0B1B3D]/20 text-lg"
                 >
                   <Phone size={24} />
                   اتصل بصاحب العمل
@@ -280,10 +295,10 @@ export default function JobDetails() {
           <div className="md:col-span-2 space-y-6">
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#0B1B3D]">
                   <Briefcase size={20} />
                 </div>
-                <h3 className="text-xl font-black text-slate-900">وصف الوظيفة</h3>
+                <h3 className="text-xl font-black text-[#0B1B3D]">وصف الوظيفة</h3>
               </div>
               <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-700 leading-relaxed text-base md:text-lg">
                 {job.description}
@@ -296,7 +311,7 @@ export default function JobDetails() {
                   <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                     <CheckCircle2 size={20} />
                   </div>
-                  <h3 className="text-xl font-black text-slate-900">الشروط والمتطلبات</h3>
+                  <h3 className="text-xl font-black text-[#0B1B3D]">الشروط والمتطلبات</h3>
                 </div>
                 <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-700 leading-relaxed text-base md:text-lg">
                   {job.requirements}
@@ -307,9 +322,40 @@ export default function JobDetails() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Share Section */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
-              <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
-                <Users size={20} className="text-blue-500" />
+              <h3 className="text-lg font-black text-[#0B1B3D] mb-4 flex items-center gap-2">
+                <Share2 size={20} className="text-[#00D084]" />
+                شارك الوظيفة
+              </h3>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleShareWhatsApp}
+                  className="flex-1 flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
+                >
+                  <MessageCircle size={24} />
+                  <span className="text-xs font-bold">واتساب</span>
+                </button>
+                <button 
+                  onClick={handleShareFacebook}
+                  className="flex-1 flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2] hover:text-white transition-colors"
+                >
+                  <Facebook size={24} />
+                  <span className="text-xs font-bold">فيسبوك</span>
+                </button>
+                <button 
+                  onClick={handleCopyLink}
+                  className="flex-1 flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                >
+                  <Copy size={24} />
+                  <span className="text-xs font-bold">نسخ الرابط</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+              <h3 className="text-lg font-black text-[#0B1B3D] mb-6 flex items-center gap-2">
+                <Users size={20} className="text-[#00D084]" />
                 تفاصيل إضافية
               </h3>
               <ul className="space-y-5">
@@ -360,12 +406,12 @@ export default function JobDetails() {
               </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20">
+            <div className="bg-gradient-to-br from-[#0B1B3D] to-[#152b57] rounded-3xl p-6 text-white shadow-lg shadow-[#0B1B3D]/20">
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle2 size={20} className="text-blue-200" />
+                <CheckCircle2 size={20} className="text-[#00D084]" />
                 <h4 className="font-black text-lg">نصيحة أمان</h4>
               </div>
-              <p className="text-sm text-blue-50 leading-relaxed font-medium">
+              <p className="text-sm text-slate-200 leading-relaxed font-medium">
                 ماتدفعش أي فلوس أو رسوم عشان تستلم شغل. لو حد طلب منك فلوس، بلّغ عنه فوراً من خلال زرار الإبلاغ.
               </p>
             </div>
@@ -391,7 +437,7 @@ export default function JobDetails() {
           <a 
             href={`tel:${job.phone}`}
             onClick={handleContactClick}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 text-sm"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#0B1B3D] text-white font-black rounded-2xl shadow-lg shadow-[#0B1B3D]/20 text-sm"
           >
             <Phone size={18} />
             اتصال

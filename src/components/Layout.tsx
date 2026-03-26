@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Briefcase, Menu, X, Home, PlusCircle, Search, Phone, Heart } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import Chatbot from './Chatbot';
-import Notifications from './Notifications';
 import { AnimatePresence } from 'motion/react';
 
 export default function Layout() {
@@ -10,77 +9,62 @@ export default function Layout() {
   const location = useLocation();
 
   const navLinks = [
-    { name: 'الرئيسية', path: '/', icon: <Home size={18} /> },
-    { name: 'شوف الوظايف', path: '/jobs', icon: <Search size={18} /> },
-    { name: 'المحفوظات', path: '/saved', icon: <Heart size={18} /> },
-    { name: 'تواصل معانا', path: '/contact', icon: <Phone size={18} /> },
+    { name: 'الرئيسية', path: '/' },
+    { name: 'الوظائف', path: '/jobs' },
+    { name: 'الأقسام', path: '/categories' }, // Assuming a categories route or just a placeholder
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900" dir="rtl">
+    <div className="min-h-screen flex flex-col bg-[#f8f9fa] text-slate-900 font-sans" dir="rtl">
       {/* Navbar */}
-      <header className="bg-[#0B1727] border-b border-white/5 sticky top-0 z-40">
+      <header className="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 md:h-20 items-center">
+          <div className="flex justify-between h-20 items-center">
+            {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-2 md:gap-3">
-                <div className="bg-blue-600/20 text-blue-400 p-1.5 md:p-2 rounded-lg md:rounded-xl border border-blue-500/30">
-                  <Briefcase className="w-5 h-5 md:w-7 md:h-7" />
+              <Link to="/" className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#00D084] rounded-xl flex items-center justify-center shadow-sm">
+                  <span className="text-white font-black text-xl">N</span>
                 </div>
-                <div>
-                  <h1 className="text-lg md:text-2xl font-bold text-white leading-none tracking-tight">وظائف نكلا العنب</h1>
-                  <p className="text-[9px] md:text-[11px] text-blue-300/70 font-medium mt-1">فرص شغل قريبة منك</p>
-                </div>
+                <h1 className="text-2xl font-black text-[#0B1B3D] tracking-tight">Nekla Job</h1>
               </Link>
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden md:flex items-center gap-10">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center gap-2 text-sm font-bold transition-colors ${
+                  className={`text-base font-bold transition-all relative py-2 ${
                     location.pathname === link.path
-                      ? 'text-white'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'text-[#00D084]'
+                      : 'text-[#0B1B3D] hover:text-[#00D084]'
                   }`}
                 >
-                  {link.icon}
                   {link.name}
+                  {location.pathname === link.path && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00D084] rounded-full"></span>
+                  )}
                 </Link>
               ))}
-              <Notifications />
-              <Link
-                to="/post-job"
-                className="ml-4 flex items-center gap-2 bg-[#FBBF24] hover:bg-[#F59E0B] text-slate-900 px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-yellow-500/20"
-              >
-                <PlusCircle size={20} />
-                ضيف وظيفة
-              </Link>
-              <Link
-                to="/admin"
-                className="text-xs text-slate-500 hover:text-slate-300"
-              >
-                الإدارة
-              </Link>
             </nav>
 
-            {/* Mobile menu button */}
-            <div className="flex items-center md:hidden gap-2">
-              <Notifications />
+            {/* Action Button & Mobile Toggle */}
+            <div className="flex items-center gap-4">
               <Link
                 to="/post-job"
-                className="flex items-center gap-1 bg-[#FBBF24] hover:bg-[#F59E0B] text-slate-900 px-3 py-2 rounded-lg font-bold text-xs shadow-md shadow-yellow-500/10 transition-all active:scale-95"
+                className="hidden md:flex items-center justify-center bg-[#0B1B3D] hover:bg-[#1a2b52] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
               >
-                <PlusCircle size={14} />
-                ضيف وظيفة
+                انشر وظيفة
               </Link>
+              
+              {/* Mobile menu button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-slate-300 hover:text-white p-1"
+                className="md:hidden text-[#0B1B3D] p-2"
               >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
             </div>
           </div>
@@ -88,29 +72,28 @@ export default function Layout() {
 
         {/* Mobile Nav */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-[#0B1727] border-t border-white/10 absolute w-full">
-            <div className="px-4 pt-2 pb-4 space-y-2 shadow-2xl">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-xl overflow-hidden">
+            <div className="p-4 space-y-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-bold ${
+                  className={`block px-4 py-3 rounded-2xl text-lg font-bold ${
                     location.pathname === link.path
-                      ? 'bg-white/10 text-white'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                      ? 'bg-emerald-50 text-[#00D084]'
+                      : 'text-[#0B1B3D] hover:bg-slate-50'
                   }`}
                 >
-                  {link.icon}
                   {link.name}
                 </Link>
               ))}
               <Link
-                to="/admin"
+                to="/post-job"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 text-sm text-slate-500"
+                className="block w-full text-center bg-[#0B1B3D] text-white px-4 py-3.5 rounded-xl font-bold mt-4 shadow-sm"
               >
-                لوحة التحكم
+                انشر وظيفة
               </Link>
             </div>
           </div>
@@ -125,21 +108,24 @@ export default function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#0B1727] border-t border-white/5 text-slate-400 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <Briefcase size={28} className="text-blue-500" />
-            <span className="text-2xl font-bold text-white">وظائف نكلا العنب</span>
+      <footer className="bg-[#f8f9fa] border-t border-slate-200 py-8 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-6 text-sm font-bold text-slate-500">
+              <Link to="/about" className="hover:text-[#0B1B3D] transition-colors">عن نكلا جوب</Link>
+              <Link to="/contact" className="hover:text-[#0B1B3D] transition-colors">اتصل بنا</Link>
+              <Link to="/terms" className="hover:text-[#0B1B3D] transition-colors">شروط الاستخدام</Link>
+              <Link to="/privacy" className="hover:text-[#0B1B3D] transition-colors">سياسة الخصوصية</Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xl font-black text-[#0B1B3D]">Nekla Job</span>
+            </div>
           </div>
-          <p className="mb-6 text-sm max-w-md mx-auto leading-relaxed">منصة الوظائف الأولى في نكلا العنب والمناطق المجاورة. بنوصل أصحاب الشغل بالناس اللي بتدور على فرصة حقيقية.</p>
-          <div className="flex justify-center gap-6 text-sm font-medium mb-8">
-            <Link to="/contact" className="hover:text-white transition-colors">تواصل معانا</Link>
-            <Link to="/jobs" className="hover:text-white transition-colors">الوظائف</Link>
-            <Link to="/post-job" className="hover:text-white transition-colors">نزل إعلان</Link>
+          <div className="mt-8 text-center md:text-right">
+            <p className="text-xs font-medium text-slate-400">
+              © {new Date().getFullYear()} Nekla Job - من قلب نكلا. جميع الحقوق محفوظة باسم سيد محمد.
+            </p>
           </div>
-          <p className="text-xs text-slate-600">
-            © {new Date().getFullYear()} وظائف نكلا العنب. جميع الحقوق محفوظة.
-          </p>
         </div>
       </footer>
 

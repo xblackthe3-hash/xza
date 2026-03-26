@@ -98,7 +98,7 @@ export default function Notifications() {
               <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-slate-800">الإشعارات</h3>
-                  <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
                     {notifications.length}
                   </span>
                 </div>
@@ -121,7 +121,7 @@ export default function Notifications() {
                         className="block p-4 hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0 text-blue-600">
+                          <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 text-[#00D084]">
                             <Briefcase size={18} />
                           </div>
                           <div className="min-w-0">
@@ -152,7 +152,7 @@ export default function Notifications() {
                 <Link 
                   to="/jobs" 
                   onClick={() => setIsOpen(false)}
-                  className="text-sm text-blue-600 font-bold hover:underline"
+                  className="text-sm text-[#00D084] font-bold hover:underline"
                 >
                   شوف كل الوظايف
                 </Link>

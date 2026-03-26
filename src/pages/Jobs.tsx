@@ -7,15 +7,16 @@ import { arEG } from 'date-fns/locale';
 import { motion } from 'motion/react';
 
 const FALLBACK_CATEGORIES = [
-  { id: '1', name_ar: 'صيدليات' },
-  { id: '2', name_ar: 'محلات تجارية' },
-  { id: '3', name_ar: 'مطاعم وكافيهات' },
-  { id: '4', name_ar: 'سائقين وتوصيل' },
-  { id: '5', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
-  { id: '6', name_ar: 'مطلوب حالاً (شغل النهارده)' },
-  { id: '7', name_ar: 'أمن وحراسة' },
-  { id: '8', name_ar: 'تعليم وتدريس' },
-  { id: '9', name_ar: 'أخرى' }
+  { id: '1', name_ar: 'عمالة زراعية ومزارع' },
+  { id: '2', name_ar: 'صنايعية وحرفيين' },
+  { id: '3', name_ar: 'سائقين (نقل، جرار، توك توك)' },
+  { id: '4', name_ar: 'محلات تجارية وسوبر ماركت' },
+  { id: '5', name_ar: 'صيدليات وعيادات' },
+  { id: '6', name_ar: 'مطاعم وكافيهات' },
+  { id: '7', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
+  { id: '8', name_ar: 'تعليم وتدريس (حضانات، سناتر)' },
+  { id: '9', name_ar: 'أمن وحراسة' },
+  { id: '10', name_ar: 'أخرى' }
 ];
 
 export default function Jobs() {
@@ -175,7 +176,7 @@ export default function Jobs() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-4 pr-12 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm md:text-base"
+                className="block w-full pl-4 pr-12 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all text-sm md:text-base"
                 placeholder="ابحث بالمسمى الوظيفي أو اسم المكان..."
               />
             </div>
@@ -192,7 +193,7 @@ export default function Jobs() {
                   else params.delete('category');
                   setSearchParams(params);
                 }}
-                className="block w-full pl-10 pr-12 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-sm md:text-base"
+                className="block w-full pl-10 pr-12 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all appearance-none text-sm md:text-base"
               >
                 <option value="">كل الأقسام</option>
                 {categories.map(cat => (
@@ -205,7 +206,7 @@ export default function Jobs() {
             </div>
             <button
               type="submit"
-              className="px-8 py-3 md:py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors shadow-lg shadow-blue-500/30 text-sm md:text-base"
+              className="px-8 py-3 md:py-4 bg-[#00D084] hover:bg-[#00b371] text-white font-bold rounded-2xl transition-colors shadow-lg shadow-emerald-500/30 text-sm md:text-base"
             >
               بحث
             </button>
@@ -228,7 +229,7 @@ export default function Jobs() {
         ) : jobs.length > 0 ? (
           <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobs.map((job) => (
-              <Link key={job.id} to={`/jobs/${job.id}`} className="block bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 group flex flex-col h-full relative">
+              <Link key={job.id} to={`/jobs/${job.id}`} className="block bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-[#00D084]/30 transition-all duration-300 group flex flex-col h-full relative">
                 <button 
                   onClick={(e) => toggleSave(e, job.id)}
                   className="absolute top-4 left-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors z-10"
@@ -238,11 +239,11 @@ export default function Jobs() {
                 </button>
                 <div className="flex justify-between items-start mb-4 gap-4 pr-10">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-1 line-clamp-2">{job.job_title}</h3>
+                    <h3 className="text-xl font-bold text-[#0B1B3D] group-hover:text-[#00D084] transition-colors mb-1 line-clamp-2">{job.job_title}</h3>
                     <p className="text-slate-500 text-sm font-medium">{job.business_name || 'جهة غير معلنة'}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex items-center gap-1">
+                    <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex items-center gap-1">
                       <Clock size={12} />
                       {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: arEG }) : 'منذ فترة'}
                     </span>
@@ -282,7 +283,7 @@ export default function Jobs() {
                       كلم على واتساب
                     </button>
                   ) : (
-                    <span className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <span className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-[#00D084] group-hover:text-white transition-colors">
                       <ChevronLeft size={20} />
                     </span>
                   )}

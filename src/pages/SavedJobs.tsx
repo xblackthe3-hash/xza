@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { MapPin, Briefcase, Clock, ChevronLeft, Heart, MessageCircle, Eye } from 'lucide-react';
+import { MapPin, Briefcase, Clock, ChevronLeft, Heart, MessageCircle, Eye, Building } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { arEG } from 'date-fns/locale';
 import { motion } from 'motion/react';
 
 const FALLBACK_CATEGORIES = [
-  { id: '1', name_ar: 'صيدليات' },
-  { id: '2', name_ar: 'محلات تجارية' },
-  { id: '3', name_ar: 'مطاعم وكافيهات' },
-  { id: '4', name_ar: 'سائقين وتوصيل' },
-  { id: '5', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
-  { id: '6', name_ar: 'مطلوب حالاً (شغل النهارده)' },
-  { id: '7', name_ar: 'أمن وحراسة' },
-  { id: '8', name_ar: 'تعليم وتدريس' },
-  { id: '9', name_ar: 'أخرى' }
+  { id: '1', name_ar: 'عمالة زراعية ومزارع' },
+  { id: '2', name_ar: 'صنايعية وحرفيين' },
+  { id: '3', name_ar: 'سائقين (نقل، جرار، توك توك)' },
+  { id: '4', name_ar: 'محلات تجارية وسوبر ماركت' },
+  { id: '5', name_ar: 'صيدليات وعيادات' },
+  { id: '6', name_ar: 'مطاعم وكافيهات' },
+  { id: '7', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
+  { id: '8', name_ar: 'تعليم وتدريس (حضانات، سناتر)' },
+  { id: '9', name_ar: 'أمن وحراسة' },
+  { id: '10', name_ar: 'أخرى' }
 ];
 
 export default function SavedJobs() {
@@ -36,7 +37,7 @@ export default function SavedJobs() {
         const { data, error } = await supabase
           .from('jobs')
           .select(`
-            id, job_title, business_name, governorate, center, area, salary_text, employment_type, created_at, published_at, status, category_id, whatsapp,
+            id, job_title, business_name, governorate, center, area, salary_text, employment_type, created_at, published_at, status, category_id, whatsapp, description,
             job_categories (name_ar)
           `)
           .in('id', savedIds);
@@ -120,7 +121,7 @@ export default function SavedJobs() {
       ) : savedJobs.length > 0 ? (
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {savedJobs.map((job) => (
-            <Link key={job.id} to={`/jobs/${job.id}`} className="block bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 group flex flex-col h-full relative">
+            <Link key={job.id} to={`/jobs/${job.id}`} className="block bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-[#00D084]/30 transition-all duration-300 group flex flex-col h-full relative">
               <button 
                 onClick={(e) => removeSavedJob(e, job.id)}
                 className="absolute top-4 left-4 p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors z-10"
@@ -131,11 +132,19 @@ export default function SavedJobs() {
               
               <div className="flex justify-between items-start mb-4 gap-4 pr-10">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-1 line-clamp-2">{job.job_title}</h3>
-                  <p className="text-slate-500 text-sm font-medium">{job.business_name || 'جهة غير معلنة'}</p>
+                  <h3 className="text-xl font-bold text-[#0B1B3D] group-hover:text-[#00D084] transition-colors mb-2 line-clamp-2">{job.job_title}</h3>
+                  <div className="flex items-center gap-1.5 text-slate-600 text-sm font-medium mb-2">
+                    <Building size={16} className="text-[#00D084]" />
+                    <span>{job.business_name || 'جهة غير معلنة'}</span>
+                  </div>
+                  {job.description && (
+                    <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed">
+                      {job.description}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex items-center gap-1">
+                  <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex items-center gap-1">
                     <Clock size={12} />
                     {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: arEG }) : 'منذ فترة'}
                   </span>
@@ -175,7 +184,7 @@ export default function SavedJobs() {
                     كلم على واتساب
                   </button>
                 ) : (
-                  <span className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <span className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-[#00D084] group-hover:text-white transition-colors">
                     <ChevronLeft size={20} />
                   </span>
                 )}
@@ -188,7 +197,7 @@ export default function SavedJobs() {
           <Heart size={64} className="mx-auto text-slate-300 mb-6" />
           <h3 className="text-2xl font-bold text-slate-800 mb-2">مفيش وظايف محفوظة</h3>
           <p className="text-slate-500 mb-8 max-w-md mx-auto">لما تعجبك وظيفة، اضغط على علامة القلب عشان تحفظها هنا وترجعلها بسهولة.</p>
-          <Link to="/jobs" className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
+          <Link to="/jobs" className="inline-flex items-center justify-center px-6 py-3 bg-[#00D084] text-white font-bold rounded-xl hover:bg-[#00b371] transition-colors">
             تصفح الوظائف
           </Link>
         </motion.div>

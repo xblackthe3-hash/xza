@@ -15,7 +15,7 @@ export default function AdminDashboard() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') {
+    if (password === 'Sayed123##') {
       sessionStorage.setItem('admin_auth', 'true');
       setIsAuthenticated(true);
       setLoginError('');
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
         className="min-h-screen bg-slate-50 flex items-center justify-center p-4"
       >
         <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-sm border border-slate-200 text-center">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-emerald-50 text-[#00D084] rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock size={32} />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">لوحة الإدارة</h1>
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="كلمة المرور"
-                  className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-left"
+                  className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all text-left"
                   dir="ltr"
                 />
               </div>
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30"
+              className="w-full py-3 bg-[#00D084] hover:bg-[#00b371] text-white font-bold rounded-xl transition-colors shadow-lg shadow-emerald-500/30"
             >
               دخول
             </button>
@@ -198,7 +198,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-              <ShieldAlert className="text-blue-600" />
+              <ShieldAlert className="text-[#00D084]" />
               لوحة تحكم الإدارة
             </h1>
             <p className="text-slate-600 mt-2">مراجعة وإدارة إعلانات الوظائف</p>
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
                 onClick={() => setFilter(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
                   filter === tab.id 
-                    ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
+                    ? 'bg-emerald-50 text-emerald-700 border-b-2 border-[#00D084]' 
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -229,7 +229,7 @@ export default function AdminDashboard() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00D084]"></div>
           </div>
         ) : jobs.length > 0 ? (
           <div className="grid grid-cols-1 gap-6">

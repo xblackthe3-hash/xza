@@ -75,7 +75,7 @@ export default function Contact() {
               
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 bg-emerald-50 text-[#00D084] rounded-full flex items-center justify-center shrink-0">
                     <Phone size={24} />
                   </div>
                   <div>
@@ -90,7 +90,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">البريد الإلكتروني</p>
-                    <p className="font-bold text-slate-800">sayedblack3@gmil.com</p>
+                    <p className="font-bold text-slate-800">sayedblack3@gmail.com</p>
                   </div>
                 </div>
 
@@ -106,9 +106,9 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className="bg-blue-600 rounded-3xl p-8 text-white text-center shadow-lg shadow-blue-500/30">
+            <div className="bg-[#0B1B3D] rounded-3xl p-8 text-white text-center shadow-lg shadow-[#0B1B3D]/30">
               <h3 className="text-xl font-bold mb-4">محتاج مساعدة سريعة؟</h3>
-              <p className="text-blue-100 mb-6 text-sm leading-relaxed">
+              <p className="text-slate-300 mb-6 text-sm leading-relaxed">
                 استخدم المساعد الآلي (Chatbot) الموجود في أسفل الشاشة، هيجاوب على معظم أسئلتك فوراً.
               </p>
             </div>
@@ -151,7 +151,7 @@ export default function Contact() {
                         required
                         value={formData.full_name}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                       />
                     </div>
                     <div>
@@ -162,7 +162,7 @@ export default function Contact() {
                         required
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-left"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all text-left"
                         dir="ltr"
                       />
                     </div>
@@ -176,7 +176,7 @@ export default function Contact() {
                       value={formData.subject}
                       onChange={handleChange}
                       placeholder="مثال: مشكلة في نشر إعلان، اقتراح تطوير..."
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -189,7 +189,7 @@ export default function Contact() {
                       value={formData.message}
                       onChange={handleChange}
                       placeholder="اكتب رسالتك هنا بالتفصيل..."
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                     ></textarea>
                   </div>
 
@@ -197,7 +197,7 @@ export default function Contact() {
                     type="submit"
                     disabled={loading}
                     className={`w-full py-4 rounded-xl font-bold text-lg text-white transition-all shadow-lg flex items-center justify-center gap-2 ${
-                      loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
+                      loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#00D084] hover:bg-[#00b371] shadow-emerald-500/30'
                     }`}
                   >
                     {loading ? 'جاري الإرسال...' : (

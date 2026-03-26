@@ -5,15 +5,16 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 const FALLBACK_CATEGORIES = [
-  { id: '1', name_ar: 'صيدليات' },
-  { id: '2', name_ar: 'محلات تجارية' },
-  { id: '3', name_ar: 'مطاعم وكافيهات' },
-  { id: '4', name_ar: 'سائقين وتوصيل' },
-  { id: '5', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
-  { id: '6', name_ar: 'مطلوب حالاً (شغل النهارده)' },
-  { id: '7', name_ar: 'أمن وحراسة' },
-  { id: '8', name_ar: 'تعليم وتدريس' },
-  { id: '9', name_ar: 'أخرى' }
+  { id: '1', name_ar: 'عمالة زراعية ومزارع' },
+  { id: '2', name_ar: 'صنايعية وحرفيين' },
+  { id: '3', name_ar: 'سائقين (نقل، جرار، توك توك)' },
+  { id: '4', name_ar: 'محلات تجارية وسوبر ماركت' },
+  { id: '5', name_ar: 'صيدليات وعيادات' },
+  { id: '6', name_ar: 'مطاعم وكافيهات' },
+  { id: '7', name_ar: 'عمالة يومية (شغل يوم بيوم)' },
+  { id: '8', name_ar: 'تعليم وتدريس (حضانات، سناتر)' },
+  { id: '9', name_ar: 'أمن وحراسة' },
+  { id: '10', name_ar: 'أخرى' }
 ];
 
 export default function PostJob() {
@@ -114,7 +115,7 @@ export default function PostJob() {
           <p className="text-slate-600 mb-8">
             إعلانك دلوقتي في مرحلة المراجعة. هيتم نشره على الموقع في أسرع وقت بعد التأكد من مطابقته للشروط.
           </p>
-          <Link to="/" className="block w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
+          <Link to="/" className="block w-full py-3 bg-[#00D084] text-white font-bold rounded-xl hover:bg-[#00b371] transition-colors">
             الرجوع للرئيسية
           </Link>
         </div>
@@ -148,7 +149,7 @@ export default function PostJob() {
           {/* Section 1: Basic Info */}
           <div className="p-6 md:p-8 border-b border-slate-100">
             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Briefcase className="text-blue-500" />
+              <Briefcase className="text-[#00D084]" />
               المعلومات الأساسية
             </h2>
             
@@ -162,7 +163,7 @@ export default function PostJob() {
                   value={formData.job_title}
                   onChange={handleChange}
                   placeholder="مثال: كاشير، بائع، صنايعي، محاسب..."
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -175,7 +176,7 @@ export default function PostJob() {
                   value={formData.poster_name}
                   onChange={handleChange}
                   placeholder="الاسم الثلاثي"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -187,7 +188,7 @@ export default function PostJob() {
                   value={formData.business_name}
                   onChange={handleChange}
                   placeholder="اسم المحل أو الشركة (اختياري)"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -199,7 +200,7 @@ export default function PostJob() {
                     required
                     value={formData.category_id}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none pr-4 pl-10"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all appearance-none pr-4 pl-10"
                   >
                     <option value="" disabled>اختار القسم المناسب</option>
                     {categories.map(cat => (
@@ -217,7 +218,7 @@ export default function PostJob() {
           {/* Section 2: Details */}
           <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Building2 className="text-blue-500" />
+              <Building2 className="text-[#00D084]" />
               تفاصيل الوظيفة
             </h2>
             
@@ -231,7 +232,7 @@ export default function PostJob() {
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="اشرح طبيعة الشغل بالتفصيل..."
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 ></textarea>
               </div>
 
@@ -243,7 +244,7 @@ export default function PostJob() {
                   value={formData.requirements}
                   onChange={handleChange}
                   placeholder="مثال: السن لا يزيد عن 30، خبرة سنة، الخ..."
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 ></textarea>
               </div>
 
@@ -260,7 +261,7 @@ export default function PostJob() {
                       value={formData.salary_text}
                       onChange={handleChange}
                       placeholder="مثال: 3000 جنيه أو يحدد في المقابلة"
-                      className="w-full pl-4 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-4 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -277,7 +278,7 @@ export default function PostJob() {
                       value={formData.work_hours}
                       onChange={handleChange}
                       placeholder="مثال: من 9 الصبح لـ 5 العصر"
-                      className="w-full pl-4 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full pl-4 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -288,7 +289,7 @@ export default function PostJob() {
           {/* Section 3: Contact & Location */}
           <div className="p-6 md:p-8">
             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <MapPin className="text-blue-500" />
+              <MapPin className="text-[#00D084]" />
               المكان والتواصل
             </h2>
             
@@ -302,7 +303,7 @@ export default function PostJob() {
                   value={formData.area}
                   onChange={handleChange}
                   placeholder="مثال: نكلا، ذات الكوم، برقاش..."
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -314,7 +315,7 @@ export default function PostJob() {
                   min="1"
                   value={formData.number_of_workers_needed}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -327,7 +328,7 @@ export default function PostJob() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="01xxxxxxxxx"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-left"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all text-left"
                   dir="ltr"
                 />
               </div>
@@ -340,7 +341,7 @@ export default function PostJob() {
                   value={formData.whatsapp}
                   onChange={handleChange}
                   placeholder="01xxxxxxxxx"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-left"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all text-left"
                   dir="ltr"
                 />
               </div>
@@ -350,7 +351,7 @@ export default function PostJob() {
               type="submit"
               disabled={loading}
               className={`w-full py-3.5 md:py-4 rounded-xl font-bold text-base md:text-lg text-white transition-all shadow-lg ${
-                loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
+                loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#00D084] hover:bg-[#00b371] shadow-emerald-500/30'
               }`}
             >
               {loading ? 'جاري الإرسال...' : 'نشر الإعلان'}

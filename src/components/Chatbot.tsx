@@ -150,7 +150,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
+    <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50">
       {/* Chat Button */}
       <AnimatePresence>
         {!isOpen && (
@@ -159,13 +159,9 @@ export default function Chatbot() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="bg-blue-600 text-white p-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center group relative"
+            className="bg-[#00D084] text-white p-4 sm:p-5 rounded-full shadow-2xl hover:bg-[#00b371] transition-all hover:scale-110 flex items-center justify-center group relative"
           >
-            <MessageCircle size={28} />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-            <div className="absolute right-full mr-4 bg-white text-slate-800 px-4 py-2 rounded-2xl shadow-2xl text-sm font-black whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 pointer-events-none border border-slate-100 hidden sm:block">
-              محتاج مساعدة؟ 👋
-            </div>
+            <MessageCircle size={32} />
           </motion.button>
         )}
       </AnimatePresence>
@@ -188,15 +184,15 @@ export default function Chatbot() {
               <div className="bg-white border-b border-slate-100 p-4 sm:p-6 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100">
-                      <Bot size={32} className="text-blue-600" />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
+                      <Bot size={32} className="text-[#00D084]" />
                     </div>
                     <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></span>
                   </div>
                   <div>
                     <h3 className="font-black text-slate-900 text-lg sm:text-xl flex items-center gap-2">
                       مساعد Nekla Job الذكي
-                      <Sparkles size={18} className="text-blue-500" />
+                      <Sparkles size={18} className="text-[#00D084]" />
                     </h3>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px] sm:text-xs text-emerald-600 font-black bg-emerald-50 px-2 py-0.5 rounded-full">أونلاين</span>
@@ -211,7 +207,7 @@ export default function Chatbot() {
                         setMessages([]);
                       }
                     }}
-                    className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                    className="p-2.5 text-slate-400 hover:text-[#00D084] hover:bg-emerald-50 rounded-xl transition-all"
                     title="مسح المحادثة"
                   >
                     <RotateCcw size={20} />
@@ -237,7 +233,7 @@ export default function Chatbot() {
                     >
                       {/* Avatar */}
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-1 ${
-                        msg.sender === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'
+                        msg.sender === 'user' ? 'bg-emerald-100 text-[#00D084]' : 'bg-slate-100 text-slate-600'
                       }`}>
                         {msg.sender === 'user' ? <div className="text-[10px] font-black">أنا</div> : <Bot size={16} />}
                       </div>
@@ -248,7 +244,7 @@ export default function Chatbot() {
                         <div
                           className={`p-4 rounded-2xl text-sm md:text-base whitespace-pre-line leading-relaxed shadow-sm ${
                             msg.sender === 'user'
-                              ? 'bg-blue-600 text-white rounded-tr-none font-bold'
+                              ? 'bg-[#00D084] text-white rounded-tr-none font-bold'
                               : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none font-medium'
                           }`}
                           dir="rtl"
@@ -261,7 +257,7 @@ export default function Chatbot() {
                               <button
                                 key={idx}
                                 onClick={() => handleOptionClick(opt)}
-                                className="text-xs md:text-sm bg-white border border-slate-200 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm font-black"
+                                className="text-xs md:text-sm bg-white border border-slate-200 text-[#00D084] py-2.5 px-4 rounded-xl hover:bg-[#00D084] hover:text-white hover:border-[#00D084] transition-all shadow-sm font-black"
                               >
                                 {opt.label}
                               </button>
@@ -277,7 +273,7 @@ export default function Chatbot() {
                         <Bot size={16} />
                       </div>
                       <div className="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-3">
-                        <Loader2 size={18} className="animate-spin text-blue-600" />
+                        <Loader2 size={18} className="animate-spin text-[#00D084]" />
                         <span className="text-xs text-slate-400 font-bold">بيفكر في الرد...</span>
                       </div>
                     </div>
@@ -294,14 +290,14 @@ export default function Chatbot() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="اسألني أي حاجة..."
-                    className="flex-1 bg-slate-100 border-none rounded-2xl py-4 sm:py-5 px-6 sm:px-8 text-sm md:text-lg focus:ring-2 focus:ring-blue-500 transition-all font-bold placeholder-slate-400 shadow-inner"
+                    className="flex-1 bg-slate-100 border-none rounded-2xl py-4 sm:py-5 px-6 sm:px-8 text-sm md:text-lg focus:ring-2 focus:ring-[#00D084] transition-all font-bold placeholder-slate-400 shadow-inner"
                     dir="rtl"
                     disabled={isLoading}
                   />
                   <button
                     type="submit"
                     disabled={!inputValue.trim() || isLoading}
-                    className="bg-blue-600 text-white p-4 sm:p-5 rounded-2xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-500/30 active:scale-95"
+                    className="bg-[#00D084] text-white p-4 sm:p-5 rounded-2xl hover:bg-[#00b371] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-emerald-500/30 active:scale-95"
                   >
                     <Send size={20} className="rotate-180" />
                   </button>
